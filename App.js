@@ -15,16 +15,16 @@ export default function App() {
   name="Movie Hub"
   component={HomeScreen}
   options={{
-    headerTitleAlign: 'center', // ✅ center the text
+    headerTitleAlign: 'center', 
     headerStyle: {
-      backgroundColor: '#000',   // header background
+      backgroundColor: '#000',   
     },
-    headerTintColor: '#e50914', // ✅ makes back icon (if any) red
+    headerTintColor: '#e50914', 
     headerTitleStyle: {
-      color: '#e50914',          // ✅ makes title red
+      color: '#e50914',         
       fontWeight: 'bold',
       fontSize: 30,
-      fontFamily: 'cursive', // ✅ or a custom font if loaded
+      fontFamily: 'cursive', 
     },
   }}
 />
