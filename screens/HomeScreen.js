@@ -87,7 +87,7 @@ export default function HomeScreen() {
       />
       <Text style={styles.title}>{item.title}</Text>
       <Text style={styles.meta}>
-        📆 {item.release_date?.slice(0, 4)} ⭐ {Math.round(item.vote_average * 10) / 10}
+        📆 {item.release_date?.slice(0, 7)} ⭐ {Math.round(item.vote_average * 10) / 10}
       </Text>
     </TouchableOpacity>
   );

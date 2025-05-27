@@ -56,7 +56,7 @@ export default StyleSheet.create({
 
   poster: {
     width: '100%',
-    height: 250,
+    height: 330,
   },
 
   title: {
