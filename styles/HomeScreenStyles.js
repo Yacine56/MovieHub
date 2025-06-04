@@ -8,28 +8,45 @@ export default StyleSheet.create({
     paddingTop: 10,
   },
 
+  searchWrapper: {
+    paddingHorizontal: 10,
+    marginTop: 10,
+  },
+
+  searchInput: {
+    backgroundColor: '#222',
+    color: '#fff',
+    padding: 10,
+    borderRadius: 8,
+  },
+
+  genrePickerWrapper: {
+    marginVertical: 10,
+    paddingHorizontal: 10,
+  },
+
+  genrePicker: {
+    backgroundColor: '#222',
+    color: '#fff',
+    borderRadius: 8,
+  },
+
   filterBarWrapper: {
-    backgroundColor: '#000',
-    paddingTop: 10,
-    paddingBottom: 6,
-    marginBottom: 20,
-    zIndex: 100,
+    marginTop: 10,
+    marginBottom: 10,
   },
 
   filterBar: {
-    paddingHorizontal: 4,
     flexDirection: 'row',
+    paddingHorizontal: 10,
+    gap: 10,
   },
 
   filterButton: {
     paddingVertical: 8,
-    paddingHorizontal: 18,
-    backgroundColor: '#222',
-    borderRadius: 999,
-    marginRight: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: 36,
+    paddingHorizontal: 15,
+    borderRadius: 20,
+    backgroundColor: '#333',
   },
 
   filterButtonActive: {
@@ -73,4 +90,29 @@ export default StyleSheet.create({
     marginBottom: 8,
     paddingHorizontal: 6,
   },
+
+  footer: {
+    paddingVertical: 20,
+  },
+
+  loadingIndicator: {
+    marginTop: 20,
+  },
+
+  movieList: {
+    paddingBottom: 100,
+    paddingTop: 10,
+  },
+  genrePickerWrapper: {
+  marginHorizontal: 10,
+  marginBottom: 20,
+  borderRadius: 8,
+  backgroundColor: '#222',
+  overflow: 'hidden',
+},
+
+genrePicker: {
+  color: '#fff',
+  height: 44,
+},
 });
