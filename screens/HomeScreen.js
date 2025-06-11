@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import {
   View,
   Text,
@@ -11,10 +11,13 @@ import {
   Keyboard,
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
-import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import styles from '../styles/HomeScreenStyles';
 
 const API_KEY = 'c303323de4763e483da75371e01f1bb6';
+
+const FAVORITES_KEY = '@favorite_movies';
 
 const categories = {
   popular: 'Popular',
@@ -25,6 +28,7 @@ const categories = {
 
 export default function HomeScreen() {
   const [movies, setMovies] = useState([]);
+  const [favorites, setFavorites] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('popular');
   const [selectedGenre, setSelectedGenre] = useState(null);
   const [genres, setGenres] = useState([]);
@@ -34,6 +38,25 @@ export default function HomeScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const navigation = useNavigation();
   const searchTimeout = useRef(null);
+
+  useFocusEffect(
+    useCallback(() => {
+      const loadFavoritesOnFocus = async () => {
+        try {
+          const jsonValue = await AsyncStorage.getItem(FAVORITES_KEY);
+          if (jsonValue != null) {
+            setFavorites(JSON.parse(jsonValue));
+          } else {
+            setFavorites([]);
+          }
+        } catch (e) {
+          console.error('Failed to load favorites on focus:', e);
+        }
+      };
+
+      loadFavoritesOnFocus();
+    }, [])
+  );
 
   useEffect(() => {
     fetchGenres();
@@ -51,7 +74,6 @@ export default function HomeScreen() {
     if (searchTimeout.current) clearTimeout(searchTimeout.current);
 
     if (!searchQuery) {
-      // Reset to default Popular movies when search is cleared
       setSelectedCategory('popular');
       setSelectedGenre(null);
       setMovies([]);
@@ -65,6 +87,25 @@ export default function HomeScreen() {
       handleSearch(searchQuery);
     }, 500);
   }, [searchQuery]);
+
+  const saveFavorites = async (newFavorites) => {
+    try {
+      await AsyncStorage.setItem(FAVORITES_KEY, JSON.stringify(newFavorites));
+    } catch (e) {
+      console.error('Failed to save favorites:', e);
+    }
+  };
+
+  const toggleFavorite = (movieId) => {
+    let updatedFavorites = [];
+    if (favorites.includes(movieId)) {
+      updatedFavorites = favorites.filter((id) => id !== movieId);
+    } else {
+      updatedFavorites = [...favorites, movieId];
+    }
+    setFavorites(updatedFavorites);
+    saveFavorites(updatedFavorites);
+  };
 
   const fetchGenres = async () => {
     try {
@@ -156,26 +197,38 @@ export default function HomeScreen() {
     );
   };
 
-  const renderMovie = ({ item }) => (
-    <TouchableOpacity
-      style={styles.card}
-      onPress={() => navigation.navigate('MovieDetail', { movie: item })}
-    >
-      <Image
-        source={{ uri: `https://image.tmdb.org/t/p/w500${item.poster_path}` }}
-        style={styles.poster}
-      />
-      <Text style={styles.title}>{item.title}</Text>
-      <Text style={styles.meta}>
-        📆 {item.release_date?.slice(0, 7)} ⭐ {Math.round(item.vote_average * 10) / 10}
-      </Text>
-    </TouchableOpacity>
-  );
+  const renderMovie = ({ item }) => {
+    const isFavorite = favorites.includes(item.id);
+
+    return (
+      <TouchableOpacity
+        style={styles.card}
+        onPress={() => navigation.navigate('MovieDetail', { movie: item })}
+      >
+        <Image
+          source={{ uri: `https://image.tmdb.org/t/p/w500${item.poster_path}` }}
+          style={styles.poster}
+        />
+        <Text style={styles.title}>{item.title}</Text>
+        <Text style={styles.meta}>
+          📆 {item.release_date?.slice(0, 7)} ⭐ {Math.round(item.vote_average * 10) / 10}
+        </Text>
+
+        <TouchableOpacity
+          onPress={() => toggleFavorite(item.id)}
+          style={styles.favoriteButton}
+        >
+          <Text style={[styles.favoriteIcon, { color: isFavorite ? 'red' : 'white' }]}>
+            {isFavorite ? '♥' : '♡'}
+          </Text>
+        </TouchableOpacity>
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <View style={styles.container}>
-      {/* 🔍 Search */}
-      <View style={styles.searchWrapper}>
+      <View style={styles.searchBarRow}>
         <TextInput
           style={styles.searchInput}
           placeholder="Search movies..."
@@ -188,57 +241,77 @@ export default function HomeScreen() {
             handleSearch(searchQuery);
           }}
         />
+        <TouchableOpacity
+          onPress={() => navigation.navigate('Favorites')}
+          style={styles.favoritesButton}
+        >
+          <Text style={styles.favoritesButtonText}>Favorites</Text>
+        </TouchableOpacity>
       </View>
 
-      {/* 🎞️ Category Filter */}
       {!searchQuery && (
-        <View style={styles.filterBarWrapper}>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.filterBar}
-          >
-            {Object.keys(categories).map((key) => (
-              <TouchableOpacity
-                key={key}
-                onPress={() => setSelectedCategory(key)}
-                style={[
-                  styles.filterButton,
-                  selectedCategory === key ? styles.filterButtonActive : null,
-                ]}
-              >
-                <Text
+        <>
+          <View style={styles.filterBarWrapper}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.filterBar}
+            >
+              {Object.keys(categories).map((key) => (
+                <TouchableOpacity
+                  key={key}
+                  onPress={() => {
+                    setSelectedCategory(key);
+                    setPage(1);
+                    setHasMore(true);
+                    setMovies([]);
+                    fetchMovies(1, key, selectedGenre);
+                  }}
                   style={[
-                    styles.filterText,
-                    selectedCategory === key ? styles.filterTextActive : null,
+                    styles.filterButton,
+                    selectedCategory === key ? styles.filterButtonActive : null,
                   ]}
                 >
-                  {categories[key]}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </View>
+                  <Text
+                    style={[
+                      styles.filterText,
+                      selectedCategory === key ? styles.filterTextActive : null,
+                    ]}
+                  >
+                    {categories[key]}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+
+          <View style={styles.genrePickerWrapper}>
+            <Picker
+              selectedValue={selectedGenre}
+              onValueChange={(itemValue) => {
+                if (itemValue === null || itemValue === 'Select Genre...') {
+                  setSelectedGenre(null);
+                  setSelectedCategory('popular');
+                  setMovies([]);
+                  setPage(1);
+                  setHasMore(true);
+                  fetchMovies(1, 'popular', null);
+                } else {
+                  setSelectedGenre(itemValue);
+                }
+              }}
+              style={styles.genrePicker}
+              dropdownIconColor="#fff"
+            >
+              <Picker.Item label="Select Genre..." value={null} color="#aaa" />
+              {genres.map((genre) => (
+                <Picker.Item key={genre.id} label={genre.name} value={genre.id} color="#fff" />
+              ))}
+            </Picker>
+          </View>
+        </>
       )}
 
-      {/* 🎭 Genre Dropdown */}
-      {!searchQuery && (
-        <View style={styles.genrePickerWrapper}>
-          <Picker
-            selectedValue={selectedGenre}
-            onValueChange={(itemValue) => setSelectedGenre(itemValue)}
-            style={styles.genrePicker}
-            dropdownIconColor="#fff"
-          >
-            <Picker.Item label="Select Genre..." value={null} color="#aaa" />
-            {genres.map((genre) => (
-              <Picker.Item key={genre.id} label={genre.name} value={genre.id} color="#fff" />
-            ))}
-          </Picker>
-        </View>
-      )}
-
-      {/* 🎬 Movie Grid */}
       {loading && page === 1 ? (
         <ActivityIndicator size="large" color="#fff" style={styles.loadingIndicator} />
       ) : (

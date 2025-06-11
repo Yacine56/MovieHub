@@ -8,27 +8,48 @@ export default StyleSheet.create({
     paddingTop: 10,
   },
 
-  searchWrapper: {
+  searchBarRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingHorizontal: 10,
     marginTop: 10,
+    marginBottom: 10,
+    gap: 10,
   },
 
   searchInput: {
+    flex: 1,
     backgroundColor: '#222',
     color: '#fff',
     padding: 10,
     borderRadius: 8,
   },
 
+  favoritesButton: {
+    backgroundColor: '#e50914',
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+  },
+
+  favoritesButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+
   genrePickerWrapper: {
     marginVertical: 10,
     paddingHorizontal: 10,
+    marginHorizontal: 10,
+    marginBottom: 20,
+    borderRadius: 8,
+    backgroundColor: '#222',
+    overflow: 'hidden',
   },
 
   genrePicker: {
-    backgroundColor: '#222',
     color: '#fff',
-    borderRadius: 8,
+    height: 44,
   },
 
   filterBarWrapper: {
@@ -69,6 +90,9 @@ export default StyleSheet.create({
     backgroundColor: '#111',
     borderRadius: 8,
     overflow: 'hidden',
+    maxWidth: '48%',
+    minWidth: 150,
+    flexBasis: '48%',
   },
 
   poster: {
@@ -103,16 +127,28 @@ export default StyleSheet.create({
     paddingBottom: 100,
     paddingTop: 10,
   },
-  genrePickerWrapper: {
-  marginHorizontal: 10,
-  marginBottom: 20,
-  borderRadius: 8,
-  backgroundColor: '#222',
-  overflow: 'hidden',
-},
 
-genrePicker: {
-  color: '#fff',
-  height: 44,
-},
+  removeButton: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    padding: 6,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    borderRadius: 20,
+    zIndex: 10,
+  },
+
+  favoriteButton: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    padding: 6,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    borderRadius: 20,
+    zIndex: 10,
+  },
+
+  favoriteIcon: {
+    fontSize: 20,
+  },
 });
